@@ -1,0 +1,37 @@
+:root {
+  /* Surface Color Hierarchy */
+  --bg-app: #090a0d;
+  --bg-surface: #12141a;
+  --bg-panel: #181b24;
+  --bg-panel-header: #1f232e;
+  --bg-input: #0d0e12;
+  --border-subtle: #272c3a;
+  --border-focus: #3d455c;
+
+  /* WAVEX Brand Accent Palette */
+  --accent-cyan: #00f0ff;
+  --accent-cyan-glow: rgba(0, 240, 255, 0.25);
+  --accent-orange: #ff6b00;
+  --accent-orange-glow: rgba(255, 107, 0, 0.25);
+
+  /* Functional Metering & Signal Colors */
+  --signal-green: #00ff66;
+  --signal-yellow: #ffcc00;
+  --signal-red: #ff3b30;
+  --signal-solo: #ffcc00;
+  --signal-mute: #ff3b30;
+
+  /* Typography Colors */
+  --text-bright: #ffffff;
+  --text-main: #e2e8f0;
+  --text-muted: #717d96;
+  --text-dim: #4a5568;
+
+  /* DAW Geometry Tokens */
+  --topbar-height: 52px;
+  --sidebar-width: 240px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
