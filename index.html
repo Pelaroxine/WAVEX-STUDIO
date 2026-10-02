@@ -1,63 +1,670 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WAVEX-STUDIO | Digital Audio Workstation</title>
-    <link rel="stylesheet" href="src/styles/theme.css">
-    <link rel="stylesheet" href="src/styles/main.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WAVEX-STUDIO | Digital Audio Workstation</title>
+  <style>
+    :root {
+      --bg-app: #08090c;
+      --bg-surface: #101217;
+      --bg-panel: #161820;
+      --bg-panel-header: #1d202b;
+      --bg-input: #0a0b0e;
+      --border-subtle: #242836;
+      --border-focus: #3a4157;
+
+      --accent-cyan: #00f0ff;
+      --accent-cyan-glow: rgba(0, 240, 255, 0.25);
+      --accent-orange: #ff6b00;
+      --accent-orange-glow: rgba(255, 107, 0, 0.25);
+
+      --signal-green: #00ff66;
+      --signal-yellow: #ffcc00;
+      --signal-red: #ff3b30;
+
+      --text-bright: #ffffff;
+      --text-main: #e2e8f0;
+      --text-muted: #717d96;
+      --text-dim: #4a5568;
+
+      --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 1. TOP MENU BAR */
+    .menu-bar {
+      height: 32px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 0.8rem;
+    }
+
+    .brand-title {
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title span {
+      background: var(--accent-orange);
+      color: #000;
+      font-size: 0.6rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 800;
+    }
+
+    .menu-items {
+      display: flex;
+      gap: 16px;
+      color: var(--text-muted);
+    }
+
+    .menu-item {
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .menu-item:hover {
+      color: var(--text-bright);
+    }
+
+    /* 2. TRANSPORT CONTROL BAR */
+    .transport-bar {
+      height: 48px;
+      background: var(--bg-panel-header);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-transport {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      width: 34px;
+      height: 32px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-transport:hover {
+      background: var(--border-subtle);
+      border-color: var(--border-focus);
+    }
+
+    .btn-transport.playing {
+      background: var(--accent-cyan);
+      color: #000;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px var(--accent-cyan-glow);
+    }
+
+    .btn-transport.recording {
+      background: var(--signal-red);
+      color: #fff;
+      border-color: var(--signal-red);
+    }
+
+    .readout-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 32px;
+    }
+
+    .readout-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+
+    .toggle-pill {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0 10px;
+      height: 32px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toggle-pill.active {
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    /* 3. MAIN WORKSPACE GRID */
+    .daw-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .upper-workspace {
+      flex: 1;
+      display: flex;
+      min-height: 250px;
+      overflow: hidden;
+    }
+
+    /* BROWSER PANEL */
+    .browser-panel {
+      width: 220px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      height: 30px;
+      background: var(--bg-panel-header);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .tree-view {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+    }
+
+    .tree-item {
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tree-item:hover {
+      background: var(--bg-panel);
+      color: var(--accent-cyan);
+    }
+
+    /* CENTER WORKSPACE (PLAYLIST & PIANO ROLL) */
+    .center-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .playlist-section {
+      flex: 1;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .timeline-ruler {
+      height: 24px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      padding-left: 100px;
+    }
+
+    .ruler-tick {
+      width: 80px;
+      border-left: 1px solid var(--border-subtle);
+      padding-left: 4px;
+    }
+
+    .playlist-tracks {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .track-row {
+      height: 48px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+    }
+
+    .track-header {
+      width: 100px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-subtle);
+      padding: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+    }
+
+    .track-lane {
+      flex: 1;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 79px,
+        var(--border-subtle) 80px
+      );
+      position: relative;
+    }
+
+    .clip {
+      position: absolute;
+      top: 6px;
+      height: 34px;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 0.7rem;
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    /* PIANO ROLL / SEQUENCER */
+    .pianoroll-section {
+      height: 180px;
+      background: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sequencer-grid {
+      flex: 1;
+      display: flex;
+      padding: 10px;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .seq-step {
+      width: 28px;
+      height: 100%;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .seq-step.active {
+      background: var(--accent-orange);
+      box-shadow: 0 0 8px var(--accent-orange-glow);
+      border-color: var(--accent-orange);
+    }
+
+    /* 4. LOWER MIXER PANEL */
+    .mixer-panel {
+      height: 220px;
+      background: var(--bg-panel);
+      border-top: 2px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mixer-strips {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      overflow-x: auto;
+    }
+
+    .strip {
+      width: 90px;
+      min-width: 90px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 4px;
+      gap: 8px;
+    }
+
+    .strip.master {
+      border-color: var(--accent-orange);
+      background: #18151c;
+    }
+
+    .strip-name {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+    }
+
+    .strip.master .strip-name {
+      color: var(--accent-orange);
+    }
+
+    .strip-fader-area {
+      flex: 1;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .strip-fader {
+      -webkit-appearance: none;
+      writing-mode: bt-lr;
+      appearance: slider-vertical;
+      width: 16px;
+      height: 110px;
+      background: var(--bg-input);
+      border-radius: 3px;
+    }
+
+    .strip-fader::-webkit-slider-thumb {
+      width: 18px;
+      height: 10px;
+      background: var(--text-main);
+      border-radius: 2px;
+    }
+
+    .vu-bar-container {
+      width: 6px;
+      height: 110px;
+      background: var(--bg-input);
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .vu-level {
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to top, var(--signal-green) 60%, var(--signal-yellow) 85%, var(--signal-red) 100%);
+      transition: height 0.05s linear;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Application Shell Header -->
-    <header class="daw-header">
-        <div class="brand-logo">
-            WAVEX-STUDIO <span class="tag">DAW v1.0</span>
+  <!-- 1. TOP MENU BAR -->
+  <div class="menu-bar">
+    <div class="brand-title">WAVEX-STUDIO <span>PRO</span></div>
+    <div class="menu-items">
+      <span class="menu-item">Project</span>
+      <span class="menu-item">Edit</span>
+      <span class="menu-item">View</span>
+      <span class="menu-item">Help</span>
+    </div>
+  </div>
+
+  <!-- 2. TRANSPORT CONTROLS -->
+  <div class="transport-bar">
+    <div class="btn-group">
+      <button class="btn-transport" id="btnPlay" title="Play">▶</button>
+      <button class="btn-transport" id="btnStop" title="Stop">■</button>
+      <button class="btn-transport" id="btnRec" title="Record">●</button>
+    </div>
+
+    <div class="readout-box">
+      <span class="readout-label">BPM</span>
+      <strong id="bpmText">120.00</strong>
+    </div>
+
+    <div class="readout-box">
+      <span class="readout-label">TIME</span>
+      <strong id="timeText">00:00:00</strong>
+    </div>
+
+    <button class="toggle-pill active" id="btnMetro">
+      <span>🔔</span> Metronome
+    </button>
+  </div>
+
+  <!-- 3. MAIN WORKSPACE -->
+  <div class="daw-body">
+    <div class="upper-workspace">
+      
+      <!-- BROWSER PANEL -->
+      <div class="browser-panel">
+        <div class="panel-header">Browser</div>
+        <div class="tree-view">
+          <div class="tree-item">📁 Samples</div>
+          <div class="tree-item">📁 Instruments</div>
+          <div class="tree-item">📁 Effects</div>
+          <div class="tree-item">📁 Projects</div>
+        </div>
+      </div>
+
+      <!-- PLAYLIST & PIANO ROLL -->
+      <div class="center-workspace">
+        <!-- PLAYLIST / ARRANGEMENT -->
+        <div class="playlist-section">
+          <div class="panel-header">Playlist / Arrangement</div>
+          <div class="timeline-ruler">
+            <div class="ruler-tick">1.1</div>
+            <div class="ruler-tick">2.1</div>
+            <div class="ruler-tick">3.1</div>
+            <div class="ruler-tick">4.1</div>
+          </div>
+          <div class="playlist-tracks">
+            <div class="track-row">
+              <div class="track-header">01 Synth</div>
+              <div class="track-lane">
+                <div class="clip" style="left: 10px; width: 150px;">Synth Loop A</div>
+              </div>
+            </div>
+            <div class="track-row">
+              <div class="track-header">02 Bass</div>
+              <div class="track-lane">
+                <div class="clip" style="left: 90px; width: 230px;">Bass Pattern</div>
+              </div>
+            </div>
+            <div class="track-row">
+              <div class="track-header">03 Drums</div>
+              <div class="track-lane">
+                <div class="clip" style="left: 10px; width: 310px;">Beat Loop</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="transport-bar">
-            <button class="btn-transport" id="btnPlay">
-                <span id="playIcon">▶</span> Play
-            </button>
-            <button class="btn-transport" id="btnStop">⏹ Stop</button>
-            <div class="bpm-display">
-                <span>BPM:</span>
-                <strong id="bpmValue">120.00</strong>
-            </div>
+        <!-- PIANO ROLL / STEP SEQUENCER -->
+        <div class="pianoroll-section">
+          <div class="panel-header">Piano Roll / Step Sequencer</div>
+          <div class="sequencer-grid" id="seqGrid">
+            <!-- Steps injected via JS -->
+          </div>
         </div>
 
-        <div>
-            <button class="btn-transport">⚙ Settings</button>
+      </div>
+    </div>
+
+    <!-- 4. LOWER MIXER PANEL -->
+    <div class="mixer-panel">
+      <div class="panel-header">Mixer</div>
+      <div class="mixer-strips">
+        <div class="strip">
+          <div class="strip-name">CH 1</div>
+          <div class="strip-fader-area">
+            <input type="range" class="strip-fader" min="0" max="1" step="0.01" value="0.8">
+            <div class="vu-bar-container"><div class="vu-level" id="vu1"></div></div>
+          </div>
         </div>
-    </header>
+        <div class="strip">
+          <div class="strip-name">CH 2</div>
+          <div class="strip-fader-area">
+            <input type="range" class="strip-fader" min="0" max="1" step="0.01" value="0.8">
+            <div class="vu-bar-container"><div class="vu-level" id="vu2"></div></div>
+          </div>
+        </div>
+        <div class="strip">
+          <div class="strip-name">CH 3</div>
+          <div class="strip-fader-area">
+            <input type="range" class="strip-fader" min="0" max="1" step="0.01" value="0.8">
+            <div class="vu-bar-container"><div class="vu-level" id="vu3"></div></div>
+          </div>
+        </div>
+        <div class="strip">
+          <div class="strip-name">CH 4</div>
+          <div class="strip-fader-area">
+            <input type="range" class="strip-fader" min="0" max="1" step="0.01" value="0.8">
+            <div class="vu-bar-container"><div class="vu-level" id="vu4"></div></div>
+          </div>
+        </div>
+        <div class="strip">
+          <div class="strip-name">CH 5</div>
+          <div class="strip-fader-area">
+            <input type="range" class="strip-fader" min="0" max="1" step="0.01" value="0.8">
+            <div class="vu-bar-container"><div class="vu-level" id="vu5"></div></div>
+          </div>
+        </div>
+        <div class="strip master">
+          <div class="strip-name">MASTER</div>
+          <div class="strip-fader-area">
+            <input type="range" class="strip-fader" min="0" max="1" step="0.01" value="0.9">
+            <div class="vu-bar-container"><div class="vu-level" id="vuMaster"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Studio Main Workspace -->
-    <main class="daw-workspace">
-        <!-- Sidebar Browser -->
-        <aside class="daw-browser">
-            <div class="panel-header">Browser</div>
-            <div class="browser-tree">
-                <div class="browser-item">📁 Sample Packs</div>
-                <div class="browser-item">📁 Instruments</div>
-                <div class="browser-item">📁 Effect Presets</div>
-                <div class="browser-item">📁 Saved Sessions</div>
-            </div>
-        </aside>
+  <script>
+    // Build Sequencer Steps
+    const seqGrid = document.getElementById('seqGrid');
+    for (let i = 0; i < 16; i++) {
+      const step = document.createElement('div');
+      step.className = `seq-step ${i % 4 === 0 ? 'active' : ''}`;
+      seqGrid.appendChild(step);
+    }
 
-        <!-- Main View Router -->
-        <section class="daw-main-view">
-            <nav class="view-tabs">
-                <button class="tab-btn active" data-view="mixer">Mixer</button>
-                <button class="tab-btn" data-view="playlist">Playlist</button>
-                <button class="tab-btn" data-view="pianoroll">Piano Roll</button>
-            </nav>
+    // Audio Engine & Transport Logic
+    let audioCtx = null;
+    let isPlaying = false;
+    let startTime = 0;
+    let timerInterval = null;
 
-            <div class="view-container" id="workspaceContainer">
-                <!-- Active DAW view renders dynamically here -->
-            </div>
-        </section>
-    </main>
+    const btnPlay = document.getElementById('btnPlay');
+    const btnStop = document.getElementById('btnStop');
+    const timeText = document.getElementById('timeText');
 
-    <script type="module" src="src/app/Shell.js"></script>
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    btnPlay.addEventListener('click', () => {
+      initAudio();
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        btnPlay.classList.add('playing');
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimeAndVU, 50);
+      } else {
+        pause();
+      }
+    });
+
+    btnStop.addEventListener('click', () => {
+      pause();
+      timeText.textContent = "00:00:00";
+    });
+
+    function pause() {
+      isPlaying = false;
+      btnPlay.classList.remove('playing');
+      clearInterval(timerInterval);
+      resetVU();
+    }
+
+    function updateTimeAndVU() {
+      // Time Counter
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const secs = String(elapsed % 60).padStart(2, '0');
+      const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      timeText.textContent = `00:${mins}:${secs}`;
+
+      // Live VU Level Simulation
+      for (let i = 1; i <= 5; i++) {
+        const vu = document.getElementById(`vu${i}`);
+        vu.style.height = `${Math.floor(Math.random() * 75 + 15)}%`;
+      }
+      document.getElementById('vuMaster').style.height = `${Math.floor(Math.random() * 85 + 10)}%`;
+    }
+
+    function resetVU() {
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`vu${i}`).style.height = '0%';
+      }
+      document.getElementById('vuMaster').style.height = '0%';
+    }
+  </script>
 </body>
 </html>
